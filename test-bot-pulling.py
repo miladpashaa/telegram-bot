@@ -50,8 +50,11 @@ log.info("TELEGRAM_TOKEN starts with: %s", TOKEN[:10])
 TELEGRAM_API = f"https://api.telegram.org/bot{TOKEN}"
 
 # ---------- Real API endpoints ----------
-CRYPTO_API = "https://api.tgju.org/v1/market/dataservice/crypto-assets?type=overview"
-GOLD_API   = "https://call2.tgju.org/ajax.json"
+BOT_TOKEN = os.getenv("TELEGRAM_TOKEN")
+SECRET_TOKEN = os.getenv("SECRET_TOKEN")
+CRYPTO_API = os.getenv("CRYPTO_API_KEY")
+GOLD_API = os.getenv("GOLD_API_KEY")
+
 
 # ---------- State ----------
 bot_data: List[Any] = []  # for /excel_file snapshots
