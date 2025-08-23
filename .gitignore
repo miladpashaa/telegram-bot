@@ -1,0 +1,6 @@
+.env
+# optional common ignores
+__pycache__/
+*.pyc
+.venv/
+venv/
