@@ -22,11 +22,13 @@ from telegram.ext import (
     ContextTypes,
 )
 
-# ---------- Env & logging ----------
+# --Env & logging 
 load_dotenv()
-TOKEN        = (os.getenv("TELEGRAM_TOKEN") or "").strip()
-SECRET_TOKEN = (os.getenv("SECRET_TOKEN") or "").strip()
-WEBHOOK_BASE = (os.getenv("WEBHOOK_BASE") or "").strip()
+TOKEN         = (os.getenv("TELEGRAM_TOKEN") or "").strip()
+SECRET_TOKEN  = (os.getenv("SECRET_TOKEN") or "").strip()
+WEBHOOK_BASE  = (os.getenv("WEBHOOK_BASE") or "").strip()
+CRYPTO_API    = (os.getenv("CRYPTO_API_KEY") or "").strip()
+GOLD_API      = (os.getenv("GOLD_API_KEY") or "").strip()
 
 logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
@@ -40,12 +42,9 @@ if not TOKEN:
 if not SECRET_TOKEN:
     raise RuntimeError("Missing SECRET_TOKEN in .env")
 if not WEBHOOK_BASE:
-    raise RuntimeError(
-        "Missing WEBHOOK_BASE in .env (e.g., https://<username>.pythonanywhere.com)"
-    )
-
-log.info("TELEGRAM_TOKEN length: %d", len(TOKEN))
-log.info("TELEGRAM_TOKEN starts with: %s", TOKEN[:10])
+    raise RuntimeError("Missing WEBHOOK_BASE in .env (e.g., https://your-app-name.onrender.com)")
+if not CRYPTO_API or not GOLD_API:
+    raise RuntimeError("Missing one or more API URLs in .env")
 
 TELEGRAM_API = f"https://api.telegram.org/bot{TOKEN}"
 
@@ -56,9 +55,9 @@ CRYPTO_API = os.getenv("CRYPTO_API_KEY")
 GOLD_API = os.getenv("GOLD_API_KEY")
 
 
-# ---------- State ----------
+# --State
 bot_data: List[Any] = []  # for /excel_file snapshots
-# ---------- Helpers ----------
+# --Helpers
 async def get_crypto_data() -> Optional[List[Dict[str, Any]]]:
     try:
         async with aiohttp.ClientSession() as sess:
@@ -92,7 +91,7 @@ async def top_crypto_text(data: List[Dict[str, Any]]) -> str:
         lines.append(f"⏲️ {last_dt}")
     return "\n".join(lines) if lines else "No crypto data to show."
 
-# ---------- Command handlers ----------
+# --Command handlers
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("قیمت کدوم بازار می‌خوای؟\n/menu برای دکمه‌ها")
 
@@ -337,7 +336,7 @@ async def excel_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     df.to_excel("telegram_bot_data.xlsx", index=False)
     await update.message.reply_text("دریافت اکسل: telegram_bot_data.xlsx")
 
-# ---------- Menu & Callback ---------
+# --Menu & Callback
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
@@ -361,13 +360,10 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     q    = update.callback_query
     data = (q.data or "").strip()
-
     # Debug: confirm PTB received the callback
     log.info("💡 PTB on_callback fired with data=%s", data)
-
     # Acknowledge the button tap immediately
     await q.answer()
-
     # Redirect update.message so your command handlers work unchanged
     update.message = q.message
 
@@ -402,7 +398,6 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     elif data == "excel_file":
         await excel_file(update, context)
     else:
-        # Fallback / help text
         await context.bot.send_message(
             chat_id=q.message.chat.id,
             text=(
@@ -419,12 +414,11 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         )
 
 
-# ---------- Build PTB app ----------
+# --Build PTB app
 tg_app = ApplicationBuilder().token(TOKEN).build()
 tg_app.add_handler(CommandHandler("menu", menu))
 # Register command handlers
 tg_app.add_handler(CommandHandler("start", start))
-tg_app.add_handler(CommandHandler("menu", menu))
 tg_app.add_handler(CommandHandler("top", top))
 tg_app.add_handler(CommandHandler("search", search))
 tg_app.add_handler(CommandHandler("goldons", goldons))
@@ -441,7 +435,7 @@ tg_app.add_handler(CommandHandler("excel_file", excel_file))
 # Register callback handler
 tg_app.add_handler(CallbackQueryHandler(on_callback))
 
-# ---------- Background loop for PTB ----------
+# --Background loop for PTB
 _loop = asyncio.new_event_loop()
 def _run_loop(loop: asyncio.AbstractEventLoop):
     asyncio.set_event_loop(loop)
@@ -469,7 +463,6 @@ async def _startup():
         log.error("Failed to setWebhook: %s", e)
     log.info("✅ PTB startup coroutine scheduled")
 asyncio.run_coroutine_threadsafe(_startup(), _loop)
-
 # ---------- Flask app & webhook endpoint ----------
 app = Flask(__name__)
 
