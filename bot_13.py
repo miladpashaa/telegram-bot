@@ -92,8 +92,11 @@ async def top_crypto_text(data: List[Dict[str, Any]]) -> str:
     return "\n".join(lines) if lines else "No crypto data to show."
 
 # --Command handlers
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("قیمت کدوم بازار می‌خوای؟\n/menu برای دکمه‌ها")
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    keyboard = [[InlineKeyboardButton("🔍 Test Inline", callback_data="test")]]
+    markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text("🧪 Inline button test:", reply_markup=markup)
+
 
 async def top(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     data = await get_crypto_data()
@@ -344,22 +347,16 @@ async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     log.info("✅ menu() triggered by user %s", update.effective_user.id)
 
     keyboard = [
-        [InlineKeyboardButton("شروع", callback_data="start"), InlineKeyboardButton("برترین‌ها در کریپتو", callback_data="top")],
-        [InlineKeyboardButton("ارز مورد نظرت", callback_data="search"), InlineKeyboardButton("اُنس طلا", callback_data="goldons")],
-        [InlineKeyboardButton("قیمت طلا", callback_data="goldprice"), InlineKeyboardButton("سکه تک فروشی", callback_data="seke_retails")],
-        [InlineKeyboardButton("سکه", callback_data="sekee"), InlineKeyboardButton("طلا در بورس", callback_data="stockm_gold")],
-        [InlineKeyboardButton("سکه در بورس", callback_data="stockm_seke"), InlineKeyboardButton("کشورهای آسیایی", callback_data="a_currencies")],
-        [InlineKeyboardButton("حاشیه خلیج فارس", callback_data="a_currency"), InlineKeyboardButton("کشورهای غربی", callback_data="e_currencies")],
-        [InlineKeyboardButton("دریافت اکسل", callback_data="excel_file")]
+        [InlineKeyboardButton("🔍 Test Button", callback_data="test")]
     ]
-
     markup = InlineKeyboardMarkup(keyboard)
 
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="یک گزینه را انتخاب کنید:",
+        text="🧪 Testing inline buttons...",
         reply_markup=markup
     )
+
 
 
 async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
