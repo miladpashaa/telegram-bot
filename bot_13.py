@@ -338,25 +338,29 @@ async def excel_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
 # --Menu & Callback
 
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    log.info("✅ menu() triggered by user %s", update.effective_user.id)
+
     keyboard = [
-        [InlineKeyboardButton("شروع", callback_data="start")],
-        [InlineKeyboardButton("برترین‌ها در کریپتو", callback_data="top")],
-        [InlineKeyboardButton("ارز مورد نظرت", callback_data="search")],
-        [InlineKeyboardButton("اُنس طلا", callback_data="goldons")],
-        [InlineKeyboardButton("قیمت طلا", callback_data="goldprice")],
-        [InlineKeyboardButton("سکه تک فروشی", callback_data="seke_retails")],
-        [InlineKeyboardButton("سکه", callback_data="sekee")],
-        [InlineKeyboardButton("طلا در بورس", callback_data="stockm_gold")],
-        [InlineKeyboardButton("سکه در بورس", callback_data="stockm_seke")],
-        [InlineKeyboardButton("کشورهای آسیایی", callback_data="a_currencies")],
-        [InlineKeyboardButton("حاشیه خلیج فارس", callback_data="a_currency")],
-        [InlineKeyboardButton("کشورهای غربی", callback_data="e_currencies")],
-        [InlineKeyboardButton("دریافت اکسل", callback_data="excel_file")],
+        [InlineKeyboardButton("شروع", callback_data="start"), InlineKeyboardButton("برترین‌ها در کریپتو", callback_data="top")],
+        [InlineKeyboardButton("ارز مورد نظرت", callback_data="search"), InlineKeyboardButton("اُنس طلا", callback_data="goldons")],
+        [InlineKeyboardButton("قیمت طلا", callback_data="goldprice"), InlineKeyboardButton("سکه تک فروشی", callback_data="seke_retails")],
+        [InlineKeyboardButton("سکه", callback_data="sekee"), InlineKeyboardButton("طلا در بورس", callback_data="stockm_gold")],
+        [InlineKeyboardButton("سکه در بورس", callback_data="stockm_seke"), InlineKeyboardButton("کشورهای آسیایی", callback_data="a_currencies")],
+        [InlineKeyboardButton("حاشیه خلیج فارس", callback_data="a_currency"), InlineKeyboardButton("کشورهای غربی", callback_data="e_currencies")],
+        [InlineKeyboardButton("دریافت اکسل", callback_data="excel_file")]
     ]
+
     markup = InlineKeyboardMarkup(keyboard)
-    await context.bot.send_message( chat_id=update.effective_chat.id, text="یک گزینه را انتخاب کنید:", reply_markup=markup
-)
+
+    await context.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="یک گزینه را انتخاب کنید:",
+        reply_markup=markup
+    )
+
 
 async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     q    = update.callback_query
