@@ -6,6 +6,7 @@ import os
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
 app = Flask(__name__)
+
 tg_app = ApplicationBuilder().token(TOKEN).build()
 
 # --- Handlers ---
@@ -22,12 +23,14 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 tg_app.add_handler(CommandHandler("start", start))
 tg_app.add_handler(CallbackQueryHandler(on_callback))
 
-# --- Start bot before first request ---
-@app.before_first_request
-def activate_bot():
-    loop = asyncio.get_event_loop()
-    loop.create_task(tg_app.initialize())
-    loop.create_task(tg_app.start())
+# --- Start bot loop immediately on import ---
+async def start_bot():
+    await tg_app.initialize()
+    await tg_app.start()
+    # no tg_app.updater here, since we're using webhook
+
+# Schedule bot startup on the current event loop
+asyncio.get_event_loop().create_task(start_bot())
 
 # --- Webhook endpoint ---
 @app.route("/webhook", methods=["POST"])
