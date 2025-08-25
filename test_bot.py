@@ -28,13 +28,14 @@ def run_bot():
     asyncio.run(bot_loop())
 
 async def bot_loop():
+    webhook_url = f"{os.getenv('WEBHOOK_BASE')}/webhook"
     await tg_app.initialize()
     await tg_app.start()
     await tg_app.updater.start_webhook(
         listen="0.0.0.0",
         port=10000,
         url_path="webhook",
-        webhook_url=f"{os.getenv('RENDER_EXTERNAL_URL')}/webhook"
+        webhook_url=webhook_url
     )
     await tg_app.updater.idle()
 
