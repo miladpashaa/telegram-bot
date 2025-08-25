@@ -25,12 +25,16 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 tg_app.add_handler(CommandHandler("start", start))
 tg_app.add_handler(CallbackQueryHandler(on_callback))
 
+# 🚀 Start Telegram app background loop
+tg_app.initialize()
+tg_app.start()
+
 # Flask webhook endpoint
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    tg_app.update_queue.put(Update.de_json(request.get_json(force=True), tg_app.bot))
+    update = Update.de_json(request.get_json(force=True), tg_app.bot)
+    tg_app.update_queue.put(update)
     return "OK"
 
 # Expose Flask app to gunicorn
 application = app
-
