@@ -22,13 +22,12 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 tg_app.add_handler(CommandHandler("start", start))
 tg_app.add_handler(CallbackQueryHandler(on_callback))
 
-# --- Background startup ---
-async def start_bot():
-    await tg_app.initialize()
-    await tg_app.start()
-
-# Schedule the bot to start when the event loop begins
-asyncio.get_event_loop().create_task(start_bot())
+# --- Start bot before first request ---
+@app.before_first_request
+def activate_bot():
+    loop = asyncio.get_event_loop()
+    loop.create_task(tg_app.initialize())
+    loop.create_task(tg_app.start())
 
 # --- Webhook endpoint ---
 @app.route("/webhook", methods=["POST"])
