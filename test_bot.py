@@ -1,8 +1,10 @@
 import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
-import os
-TOKEN = os.getenv("TELEGRAM_TOKEN")
+
+
+TOKEN = "7687857299:AAEi4GutMZXiwdJn9mIAvMOTTlvTkaINZaY"
+
 
 
 # --- Handlers ---
