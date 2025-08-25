@@ -5,8 +5,8 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 import os
 
 TOKEN = os.getenv("TELEGRAM_TOKEN")
-app = Flask(__name__)
 
+app = Flask(__name__)
 tg_app = ApplicationBuilder().token(TOKEN).build()
 
 # --- Handlers ---
@@ -18,25 +18,26 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    await context.bot.send_message(chat_id=q.message.chat.id, text=f"✅ You tapped: {q.data}")
+    await context.bot.send_message(chat_id=q.message.chat.id,
+                                   text=f"✅ You tapped: {q.data}")
 
 tg_app.add_handler(CommandHandler("start", start))
 tg_app.add_handler(CallbackQueryHandler(on_callback))
 
-# --- Start bot loop immediately on import ---
+# --- Start the bot when module loads ---
 async def start_bot():
     await tg_app.initialize()
-    await tg_app.start()
-    # no tg_app.updater here, since we're using webhook
+    await tg_app.start()  # no .updater in webhook mode
 
-# Schedule bot startup on the current event loop
-asyncio.get_event_loop().create_task(start_bot())
+# schedule bot startup on the loop right now
+loop = asyncio.get_event_loop()
+loop.create_task(start_bot())
 
 # --- Webhook endpoint ---
 @app.route("/webhook", methods=["POST"])
 def webhook():
     update = Update.de_json(request.get_json(force=True), tg_app.bot)
-    asyncio.get_event_loop().create_task(tg_app.update_queue.put(update))
+    loop.create_task(tg_app.update_queue.put(update))
     return "OK"
 
 # Gunicorn entrypoint
