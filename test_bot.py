@@ -1,6 +1,6 @@
 import os
-import asyncio
 import threading
+import asyncio
 from flask import Flask, request
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -12,9 +12,8 @@ tg_app = ApplicationBuilder().token(TOKEN).build()
 
 # --- Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [[InlineKeyboardButton("🔍 Inline Test", callback_data="test")]]
-    markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("🧪 Inline button test:", reply_markup=markup)
+    kb = [[InlineKeyboardButton("🔍 Inline Test", callback_data="test")]]
+    await update.message.reply_text("🧪 Inline button test:", reply_markup=InlineKeyboardMarkup(kb))
 
 async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -24,24 +23,28 @@ async def on_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 tg_app.add_handler(CommandHandler("start", start))
 tg_app.add_handler(CallbackQueryHandler(on_callback))
 
-# --- Background thread to run bot loop ---
+# --- Background bot runner ---
 def run_bot():
-    asyncio.run(_run_bot())
+    asyncio.run(bot_loop())
 
-async def _run_bot():
+async def bot_loop():
     await tg_app.initialize()
     await tg_app.start()
-    # Idle forever so the bot stays running
-    await tg_app.updater.start_polling()  # <- or tg_app.updater.start_webhook(...) if using webhook
+    await tg_app.updater.start_webhook(
+        listen="0.0.0.0",
+        port=10000,
+        url_path="webhook",
+        webhook_url=f"{os.getenv('RENDER_EXTERNAL_URL')}/webhook"
+    )
+    await tg_app.updater.idle()
 
 threading.Thread(target=run_bot, daemon=True).start()
 
-# --- Webhook endpoint ---
+# --- Webhook endpoint for Flask ---
 @app.route("/webhook", methods=["POST"])
 def webhook():
     update = Update.de_json(request.get_json(force=True), tg_app.bot)
     asyncio.get_event_loop().create_task(tg_app.update_queue.put(update))
     return "OK"
 
-# Gunicorn entrypoint
 application = app
